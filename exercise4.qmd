@@ -144,6 +144,84 @@ sabi_moving |>
 # Exercise A: Segmentation
 With the skills from Input: Segmentation you can now implement the segmentation algorithm described in Laube and Purves (2011) to either your own movement data or to a different wild boar using different sampling intervals.
 
+## Task 1: Calculate distances
+
+Now, you can Step a): Specify a temporal window v and Step b): Measure the distance to every point within v, which you had used with sabi, on on your own movement data or to a different wild boar using different sampling intervals.
+
+```{r}
+df_tannenhaeher <- read_delim("tannenhaeher.csv") |>
+    st_as_sf(coords = c("x", "y"), crs = 2056, remove = FALSE) 
+
+df_tannenhaeher_K125864 <- df_tannenhaeher |> 
+  filter(ind_ident=="K125864")
+
+df_tannenhaeher_K121752 <- df_tannenhaeher |> 
+  filter(ind_ident=="K121752")
+```
+
+```{r}
+#| label: fig-nutcracker-K125864-1
+#| fig-cap: "Movement of the Spotted Nutcracker K125864. The cluster of dots / fixes are possible ‘static’ points"
+
+df_tannenhaeher_K125864 |> 
+  ggplot(aes(x,y)) +
+  geom_point() +
+  geom_path(alpha=0.4) +
+  theme_minimal()
+```
+
+```{r}
+steps <- function(df) {
+  df_updated <- df |> 
+  mutate(
+    nMinus2 = distance_by_element(lag(geometry,2),geometry),
+    nMinus1 = distance_by_element(lag(geometry,1),geometry),
+    nPlus1 = distance_by_element(geometry,lead(geometry,1)),
+    nPlus2 = distance_by_element(geometry,lead(geometry,2))
+  ) |>
+    rowwise() |>
+    mutate(
+        stepMean = mean(c(nMinus2, nMinus1, nPlus1, nPlus2))
+    ) |>
+    ungroup()|>
+    mutate(static = stepMean < mean(stepMean, na.rm = TRUE))
+  
+  return (df_updated)
+}
+
+
+df_tannenhaeher_K125864 <- df_tannenhaeher_K125864 |> steps()
+df_tannenhaeher_K121752 <- df_tannenhaeher_K121752 |> steps()
+```
+
+```{r}
+#| label: fig-nutcracker-K125864-2
+#| fig-cap: "The trajectory of Spotted Nutcracker K125864. Red dots are static points, the black dots signify moving points"
+
+
+df_tannenhaeher_K125864|>
+  filter(!static) |> 
+    ggplot(aes(x, y)) +
+    geom_path(alpha=0.3) +
+    geom_point() +
+    geom_point(data = df_tannenhaeher_K125864 |> filter(static), col = "red") +
+    coord_fixed() +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-nutcracker-K121752-1
+#| fig-cap: "The trajectory of Spotted Nutcracker K121752. Blue dots are static points, the black dots signify moving points"
+df_tannenhaeher_K121752|>
+  filter(!static) |> 
+    ggplot(aes(x, y)) +
+    geom_path(alpha=0.3) +
+    geom_point() +
+    geom_point(data = df_tannenhaeher_K121752 |> filter(static), col = "blue") +
+    coord_fixed() +
+  theme_minimal()
+```
+
 
 # References
 
