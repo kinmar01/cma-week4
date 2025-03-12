@@ -3144,7 +3144,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>exercise 4, part of the course cma (mainly based on@Laube2014)</p>
+<p>exercise 4, part of the course cma (mainly based on <span class="citation" data-cites="Laube2014">Laube (<a href="#ref-Laube2014" role="doc-biblioref">2014</a>)</span>)</p>
 <section id="abstract" class="level1 unnumbered unlisted">
 <h1 class="unnumbered unlisted">Abstract</h1>
 </section>
@@ -3522,13 +3522,40 @@ Figure 6: The trajectory of Spotted Nutcracker K125864 &amp; K121752.. Red dots
 <p>You can use the newly created function rle_id to assign unique IDs to subtrajectories (as shown below). Visualize the moving segments by colourizing them by segment_ID. Then use segment_ID as a grouping variable to determine the segments duration and remove short segments (e.g. segments with a duration &lt; 5 Minutes)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df_spotted_nutcracker <span class="ot">&lt;-</span> df_spotted_nutcracker <span class="sc">|&gt;</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">segment_id =</span> <span class="fu">rle_id</span>(static))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">segment_id =</span> <span class="fu">rle_id</span>(static))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>df_spotted_nutcracker <span class="sc">|&gt;</span> </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(segment_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 1163 features and 1 field
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 2781395 ymin: 1184825 xmax: 2788848 ymax: 1194593
+Projected CRS: CH1903+ / LV95
+# A tibble: 1,163 × 2
+   segment_id          geometry
+   &lt;fct&gt;            &lt;POINT [m]&gt;
+ 1 1          (2788347 1186093)
+ 2 2          (2788376 1186056)
+ 3 3          (2788404 1186006)
+ 4 3          (2788405 1186011)
+ 5 3          (2788376 1186087)
+ 6 4          (2787712 1186836)
+ 7 5          (2787744 1186768)
+ 8 5          (2788087 1186422)
+ 9 5          (2788433 1186103)
+10 5          (2788434 1186076)
+# ℹ 1,153 more rows</code></pre>
+</div>
 </div>
 </section>
 </section>
 <section id="references" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Laube2014" class="csl-entry" role="listitem">
+Laube, Patrick. 2014. <em>Computational Movement Analysis</em>. 2014th ed. SpringerBriefs in Computer Science. Cham: Springer International Publishing AG.
+</div>
 <div id="ref-LaubePurves2011" class="csl-entry" role="listitem">
 Laube, Patrick, and Ross S. Purves. 2011. <span>“How Fast Is a Cow? Cross-Scale Analysis of Movement Data.”</span> <em>Transactions in GIS</em> 15 (3): 401–18. https://doi.org/<a href="https://doi.org/10.1111/j.1467-9671.2011.01256.x">https://doi.org/10.1111/j.1467-9671.2011.01256.x</a>.
 </div>

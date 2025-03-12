@@ -16,7 +16,7 @@ bibliography: bibliography.bib
 output-file: index
 ---
 
-exercise 4, part of the course cma (mainly based on\@Laube2014)
+exercise 4, part of the course cma (mainly based on @Laube2014)
 
 # Abstract {.unnumbered .unlisted}
 
@@ -268,6 +268,9 @@ You can use the newly created function rle_id to assign unique IDs to subtraject
 ```{r}
 df_spotted_nutcracker <- df_spotted_nutcracker |>
     mutate(segment_id = rle_id(static))
+
+df_spotted_nutcracker |> 
+  select(segment_id)
 ```
 
 
