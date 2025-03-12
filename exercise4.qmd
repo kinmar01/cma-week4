@@ -141,6 +141,10 @@ sabi_moving |>
     theme(legend.position = "bottom")
 ```
 
+# Exercise A: Segmentation
+With the skills from Input: Segmentation you can now implement the segmentation algorithm described in Laube and Purves (2011) to either your own movement data or to a different wild boar using different sampling intervals.
+
+
 # References
 
 ::: {#refs}
