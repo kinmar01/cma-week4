@@ -1,0 +1,28 @@
+---
+title: "Analysis of GOT Series"
+author: "kinmar01"
+editor: visual
+format: 
+  html:           
+    toc: true 
+    toc-depth: 2
+    embed-resources: true
+  pdf:           
+    toc: true 
+    toc-depth: 2
+format-links: false
+number-sections: true
+bibliography: bibliography.bib
+output-file: index
+---
+
+exercise 4, part of the course cma (mainly based on @Laube2014)
+
+# Abstract {.unnumbered .unlisted}
+
+
+
+# References
+
+::: {#refs}
+:::
