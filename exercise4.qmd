@@ -20,7 +20,8 @@ exercise 4, part of the course cma (mainly based on @Laube2014)
 
 # Abstract {.unnumbered .unlisted}
 
-# [Input: Segmentation](https://computationalmovementanalysis.github.io/FS25/Week4/1_input.html)
+# **Input: Segmentation**
+
 
 You’ve read @LaubePurves2011 about segmenting trajectories. In the paper, the authors define “ *static* ” fixes as “ \* those whose average Euclidean distance to other fixes inside a temporal window v is less than some threshold d \* ”, as illustrated in @fig-laube-purves-2011
 
@@ -31,12 +32,12 @@ b.  Measure the distance from every point to every other point within this tempo
 c.  Remove “static points”:These are points where the average distance is less than a given threshold. This segments the trajectory into subtrajectories.
 d.  Now remove short subtrajectories:These are trajectories with a short duration (whereas “short” is tbd).
 
-We will ** demonstrate ** implementing this method on the wild boar “Sabi”, restricting ourselves to a couple of tracking days. Your task will be to understand this implementation and apply it to your own movement data.
+We will \*\* demonstrate \*\* implementing this method on the wild boar “Sabi”, restricting ourselves to a couple of tracking days. Your task will be to understand this implementation and apply it to your own movement data.
 
 Open a RStudio Project for this week. Next, copy the wild boar data you downloaded last week ( *wildschwein_BE_2056.csv* ) to your project folder. If you cannot find this dataset on your computer, you can re - download it from moodle. Transform the data into an `sf` object, filter for the wild boar Sabi and a datetime between “2015 - 07 - 01” and “2015 - 07 - 03”.
 
 ```{r}
-pacman::p_load("readr", "sf", "dplyr", "ggplot2")
+pacman::p_load("readr", "sf", "dplyr", "ggplot2","RColorBrewer","tidyr")
 
 theme_minimal() |> theme_set()
 ```
@@ -140,11 +141,11 @@ sabi_moving |>
   theme(legend.position = "bottom")
 ```
 
-# Exercise A: Segmentation
+# **Exercise A: Segmentation**
 
 With the skills from Input: Segmentation you can now implement the segmentation algorithm described in Laube and Purves (2011) to either your own movement data or to a different wild boar using different sampling intervals.
 
-## Task 1: Calculate distances
+## **Task 1: Calculate distances**
 
 Now, you can Step a): Specify a temporal window v and Step b): Measure the distance to every point within v, which you had used with sabi, on on your own movement data or to a different wild boar using different sampling intervals.
 
@@ -238,7 +239,7 @@ df_spotted_nutcracker |>
 Now visualize the segmented trajectory spatially. Just like last week, you can use ggplot with `geom_path()`, `geom_point()` and `coord_equal()`. Assign `colour = static` within `aes()` to distinguish between segments *with* “movement” and *without*.
 
 ```{r}
-#| label: fig-nutcracker-K125864-2
+#| label: fig-nutcracker-1
 #| fig-cap: "The trajectory of Spotted Nutcracker K125864 & K121752.. Red dots are static points, the black dots signify moving points"
 
 
@@ -266,15 +267,125 @@ rle_id <- function(vec) {
 You can use the newly created function rle_id to assign unique IDs to subtrajectories (as shown below). Visualize the moving segments by colourizing them by segment_ID. Then use segment_ID as a grouping variable to determine the segments duration and remove short segments (e.g. segments with a duration < 5 Minutes)
 
 ```{r}
-df_spotted_nutcracker <- df_spotted_nutcracker |>
+df_spotted_nutcracker_v2 <- union(
+  df_tannenhaeher_K121752|>
+    mutate(segment_id = rle_id(static)),
+  df_tannenhaeher_K125864|>
     mutate(segment_id = rle_id(static))
-
-df_spotted_nutcracker |> 
-  select(segment_id)
+)
 ```
 
 
-# References
+```{r}
+#| label: fig-nutcracker-2
+#| fig-cap: "The trajectory of Spotted Nutcracker K125864 & K121752. Black dots are static points, moving points and trajectories are colorized by segment"
+
+df_spotted_nutcracker_v2|>
+  filter(!static) |>
+  ggplot(aes(x, y, color=segment_id)) +
+  geom_path(alpha=0.3) +
+  geom_point() +
+  geom_point(data = df_spotted_nutcracker |> filter(static), col = "black",alpha=0.3) +
+  coord_equal()+
+  facet_wrap(.~ind_ident)+
+  theme(legend.position = "none")
+  
+```
+
+```{r}
+df_spotted_nutcracker_v2 <- df_spotted_nutcracker_v2 |> 
+  group_by(segment_id,ind_ident) |> 
+  mutate(
+    duration = last(timestamp)-first(timestamp)
+  ) |> 
+  ungroup()
+  
+```
+
+
+# **Exercise B: Similarity**
+
+## **Task 1: Similarity measures**
+
+We will now calculate similarties between trajectories using a new dataset pedestrian.csv (available on moodle). Download an import this dataset as a `data.frame` or `tibble`. It it a set of six different but similar trajectories from pedestrians walking on a path.
+
+For this task, explore the trajectories in @fig-trajectories first and get an idea on how the pedestrians moved.
+
+
+```{r}
+df_pedestrian <- read_delim("data/pedestrian.csv") |>
+  mutate(TrajID = as.factor(TrajID)) |> 
+  st_as_sf(coords = c("E", "N"),crs = 2056,remove = FALSE) 
+```
+
+
+```{r}
+#| label: fig-trajectories
+#| fig-cap:  "Visual comparison of 6 trajectories. Each subplot highlights a trajectory"
+
+df_pedestrian |> 
+  ggplot(aes(E,N))+
+  geom_point(data=df_pedestrian |> select(-TrajID),aes(E,N),alpha=0.1)+
+  geom_point(aes(color=TrajID))+
+  scale_color_brewer(palette = "Spectral") +
+  coord_equal()+
+  facet_wrap(.~TrajID)
+```
+
+
+## **Task 2: Calculate similarity**
+
+Install the package `SimilarityMeasures` (`install.packages("SimilarityMeasures")`). Familiarize yourself with this package by skimming through the function descriptions `help(package = "SimilarityMeasures")`. Now compare trajectory 1 to trajectories 2-6 using different similarity measures from the package. Your options are. `DTW`, `EditDist`, `Frechet` and `LCSS`.
+
+Before visualizing your results think about the following: Which two trajectories to you percieve to be most similar, which are most dissimilar? Now visualize the results from the computed similarity measures. Which measure reflects your own intuition the closest?
+
+Note:
+
+-   **All functions in the package need matrices as input, with one trajectory per matrix.**
+-   `LCSS`takes very long to compute. The accuracy of the algorithm (`pointSpacing =` ,`pointDistance =` and `errorMarg =`) can be varied to provide faster calculations. Please see @vlachos2002 for more information.
+
+```{r}
+pacman::p_load("SimilarityMeasures")
+```
+
+```{r}
+trajectories  <- df_pedestrian |> 
+  group_by(TrajID) |> 
+  summarise(geometry = list(matrix(c(E, N), ncol = 2, byrow = FALSE))) |> 
+  ungroup() |> 
+  pull(geometry)
+
+results <- tibble(TrajID = 2:6) |> 
+  rowwise() |> 
+  mutate(
+    DTW = DTW(trajectories[[1]], trajectories[[TrajID]]),
+    EditDist = EditDist(trajectories[[1]], trajectories[[TrajID]]),
+    Frechet = Frechet(trajectories[[1]], trajectories[[TrajID]])
+#    LCSS = LCSS(trajectories[[1]], trajectories[[TrajID]])
+  ) |> 
+  ungroup() |> 
+  mutate(
+    TrajID = as.factor(TrajID)
+  )
+```
+
+
+```{r}
+#| label: fig-trajectories-similarity
+#| fig-cap:  "Computed similarities using different measures between trajectory 1 to all other trajectories"
+results |> 
+  pivot_longer(cols = c(DTW, EditDist, Frechet), names_to = "Method", values_to = "Similarity") |> 
+  ggplot(aes(TrajID, y = Similarity, fill = TrajID)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_brewer(palette = "Spectral") +
+  theme_minimal() +
+  facet_wrap(.~Method, scales="free")+
+  labs(x = "Verglichene Trajektorie", y = "Ähnlichkeitswert")
+
+```
+
+
+# **References**
 
 ::: {#refs}
 :::
